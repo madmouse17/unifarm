@@ -1,112 +1,139 @@
-# UnoRouter Register Bot
+# UnoRouter Register Bot — Camoufox Edition
 
-Automated account registration for UnoRouter (unorouter.com) using HTTP-only approach — no browser automation, no Playwright.
+Automated account registration for UnoRouter (unorouter.com) using **Camoufox browser** — no captcha solver needed, Turnstile auto-solves via browser fingerprint.
 
-**Repo:** https://github.com/hirotomasato/unifarm
+**Original repo:** https://github.com/hirotomasato/unifarm  
+**Camoufox fork:** https://github.com/madmouse17/unifarm
 
-**Features:**
-- Cloudflare bypass via TLS impersonation (curl_cffi)
-- Turnstile CAPTCHA solving via Capsolver (Proxyless)
-- Automatic API key extraction + free model enumeration
-- Retry logic with dead proxy auto-swap
-- Concurrent workers support
-- Rich TUI dashboard with live stats
-- Anti-detection: randomized TLS fingerprints, headers, Chrome versions
+## What Changed (Camoufox Edition)
+
+| Before (original) | After (Camoufox) |
+|---|---|
+| Capsolver API ($0.002/solve) | Camoufox browser — **FREE** |
+| curl_cffi HTTP requests | Real browser automation |
+| Manual Turnstile solving | **Auto Turnstile** via fingerprint |
+| Requires proxy for API calls | Browser bypasses Cloudflare natively |
+
+## Features
+
+- 🆓 **Free** — No captcha solver API needed
+- 🦊 **Camoufox** — Real Firefox-based anti-detect browser
+- 🔐 **Auto Turnstile** — Cloudflare Turnstile solves automatically
+- 🌐 **Cloudflare bypass** — Native browser fingerprint beats CF
+- 🔄 **Proxy support** — Rotating residential proxy support
+- 📊 **TUI dashboard** — Rich terminal UI with live stats
+- ⚡ **Direct API** — Register/login via API for speed
+- 🎭 **Anti-detection** — Browser fingerprint spoofing built-in
 
 ## Prerequisites
 
 ```bash
-pip install curl_cffi rich requests cloudscraper
+pip install camoufox rich
 ```
 
 Or use the included venv:
 
 ```bash
-python3 -m venv venv
-./venv/bin/pip install curl_cffi rich requests cloudscraper
+python -m venv venv
+./venv/Scripts/pip install camoufox rich
 ```
+
+Camoufox will auto-download its browser binary on first run (~490MB).
 
 ## Quick Start
 
 ```bash
-# 1. Edit config.json with your Capsolver key
-# 2. Add proxies to proxy.txt (one per line: http://IP:PORT)
-# 3. Run
+# 1. Add proxies to proxy.txt (one per line)
+# 2. Run
 
-./venv/bin/python register_tui.py 5        # register 5 accounts
-./venv/bin/python register_tui.py 10 -w 3  # 10 accounts, 3 concurrent workers
+./venv/Scripts/python register_camoufox.py 1        # register 1 account
+./venv/Scripts/python register_camoufox.py 5        # register 5 accounts
+./venv/Scripts/python register_camoufox.py 10 -w 3  # 10 accounts, 3 workers
 ```
 
 ## Files
 
 ```
 unifarm/
-├── config.json        # API keys, sitekey, retry, cooldown settings
-├── proxy.txt          # HTTP proxies (one per line)
-├── register_tui.py    # Main script — TUI dashboard (recommended)
-├── register_bot.py    # CLI version — plain text output
-├── accounts.txt       # Output: username|password|api_key|model_count
-├── free_models.txt    # Output: list of free models
-└── venv/              # Python virtualenv
+├── config.json             # Settings (retry, cooldown, etc.)
+├── proxy.txt               # HTTP proxies (one per line)
+├── register_camoufox.py    # Main script — Camoufox browser (NEW)
+├── register_tui.py         # Original script — Capsolver + curl_cffi
+├── register_bot.py         # Original CLI version
+├── accounts.txt            # Output: username|password|api_key|model_count
+├── free_models.txt         # Output: list of free models
+└── venv/                   # Python virtualenv
 ```
 
 ## Configuration (config.json)
 
-Copy `config.example.json` to `config.json` and fill in your key:
-
-```bash
-cp config.example.json config.json
-# edit config.json with your Capsolver key
-```
-
 ```json
 {
-    "capsolver_key": "CAP-...",
-    "turnstile_sitekey": "0x4AAAAAACuPK5b5SmOxRGAW",
+    "proxy_file": "proxy.txt",
+    "results_file": "accounts.txt",
     "retry": 3,
     "cooldown_min": 2,
     "cooldown_max": 5,
-    "concurrent": 1,
-    "balance_warn": 1.0
+    "concurrent": 1
 }
 ```
 
 | Key | Description |
 |-----|-------------|
-| `capsolver_key` | Capsolver API key (starts with `CAP-`) |
-| `turnstile_sitekey` | UnoRouter's Turnstile site key |
-| `retry` | Max retries per account (proxy swap on failure) |
+| `proxy_file` | Path to proxy list |
+| `results_file` | Where to save accounts |
+| `retry` | Max retries per account |
 | `cooldown_min` | Min cooldown between accounts (seconds) |
 | `cooldown_max` | Max cooldown between accounts (seconds) |
-| `concurrent` | Default worker count (override with `-w`) |
-| `balance_warn` | Show warning when Capsolver balance drops below this |
+
+## Proxy Format
+
+```
+# Format 1: http://user:pass@host:port
+http://user:pass@103.1.2.3:8080
+
+# Format 2: host:port:user:pass
+103.1.2.3:8080:user:pass
+
+# Format 3: host:port (no auth)
+103.1.2.3:8080
+```
 
 ## Flow
 
 Each account goes through:
 
-1. **Solve Turnstile** (register page) — Capsolver Proxyless
-2. **Register** — POST /api/auth/account/register
-3. **Solve Turnstile** (login page) — parallel with step 2
-4. **Login** — POST /api/auth/account/login
-5. **Get API Key** — GET /api/billing/token/best-key
-6. **Verify Key** — real call to /v1/models
-7. **Save** — username, password, api_key, free model count
+1. **Launch Camoufox** — Anti-detect browser with proxy
+2. **Open Register Page** — Navigate to unorouter.com/en/register
+3. **Solve Turnstile** — Auto-solves via browser fingerprint (~8-15s)
+4. **Register** — POST /api/auth/account/register with Turnstile token
+5. **Open Login Page** — Navigate to unorouter.com/en/login
+6. **Solve Turnstile** — Auto-solves on login page (~7-10s)
+7. **Login** — POST /api/auth/account/login → access_token
+8. **Get API Key** — GET /api/billing/token/best-key
+9. **Verify Key** — Real call to /v1/models
+10. **Save** — username, password, api_key, free model count
 
-## Anti-Detection
+## Performance
 
-- **TLS Fingerprint**: curl_cffi impersonates Chrome/Safari (randomized per session)
-- **Headers**: rotating Chrome versions (124-131), random platforms, sec-ch-ua headers
-- **Sessions**: cookies maintained across requests within each account flow
-- **Proxies**: each account uses a random proxy from proxy.txt
+- Average speed: ~40-50 seconds per account
+- Turnstile solve: ~8-15 seconds (auto, no API needed)
+- Proxy: rotating residential recommended
+- Cost: **$0** (no captcha solver fees)
 
-## Notes
+## How Turnstile Auto-Solves
 
-- Turnstile tokens are **single-use** — cannot reuse between register and login
-- Proxies must be accessible from the machine running the script (IP-whitelisted proxies won't work with NopeCHA)
-- Capsolver Proxyless solves Turnstile from Capsolver's servers — no proxy needed for solving
-- Average speed: ~12 seconds per account
-- Capsolver cost: ~$0.002 per solve, ~$0.004 per account
+Camoufox is a modified Firefox with anti-fingerprinting. Cloudflare Turnstile
+uses browser fingerprinting to detect bots. Camoufox spoofs:
+
+- Canvas fingerprint
+- WebGL fingerprint  
+- Audio fingerprint
+- Navigator properties
+- Screen resolution
+- Font enumeration
+
+This makes Turnstile think it's a real browser → auto-solves without clicking.
 
 ## License
 

@@ -5,4 +5,5 @@ accounts.txt
 free_models.txt
 config.json
 proxy.txt
+debug_*.png
 .DS_Store
