@@ -4,4 +4,5 @@ __pycache__/
 accounts.txt
 free_models.txt
 config.json
-.DS_Storeproxy.txt
+proxy.txt
+.DS_Store
