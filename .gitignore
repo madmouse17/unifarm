@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+accounts.txt
+free_models.txt
+config.json
+.DS_Store

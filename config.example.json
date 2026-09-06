@@ -1,0 +1,13 @@
+{
+    "capsolver_key": "CAP-YOUR_KEY_HERE",
+    "turnstile_sitekey": "0x4AAAAAACuPK5b5SmOxRGAW",
+    "register_url": "https://unorouter.com/en/register",
+    "login_url": "https://unorouter.com/en/login",
+    "proxy_file": "proxy.txt",
+    "results_file": "accounts.txt",
+    "retry": 3,
+    "cooldown_min": 2,
+    "cooldown_max": 5,
+    "concurrent": 1,
+    "balance_warn": 1.0
+}
